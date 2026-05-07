@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horizontal Mind Map</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            background: white;
+            border-bottom: 1px solid #ddd;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .toolbar button {
+            padding: 8px 12px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .toolbar button:hover {
+            background: #0056b3;
+        }
+
+        .toolbar input[type="range"] {
+            width: 100px;
+        }
+
+        .toolbar label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 50px);
+            overflow: hidden;
+            background: linear-gradient(90deg, #f9f9f9 1px, transparent 1px), 
+                        linear-gradient(#f9f9f9 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: grab;
+        }
+
+        canvas:active {
+            cursor: grabbing;
+        }
+
+        .notes-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .note {
+            position: absolute;
+            background: white;
+            border: 2px solid #007bff;
+            border-radius: 4px;
+            padding: 10px;
+            min-width: 120px;
+            max-width: 200px;
+            cursor: move;
+            user-select: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.2s;
+        }
+
+        .note:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .note.selected {
+            border-color: #ff6b6b;
+            background: #fff8f8;
+        }
+
+        .note-content {
+            word-break: break-word;
+            font-size: 13px;
+            min-height: 20px;
+            outline: none;
+            color: #333;
+        }
+
+        .note-controls {
+            display: flex;
+            gap: 5px;
+            margin-top: 8px;
+            font-size: 11px;
+        }
+
+        .note-btn {
+            flex: 1;
+            padding: 4px;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 10px;
+            color: #333;
+        }
+
+        .note-btn:hover {
+            background: #d0d0d0;
+        }
+
+        .toggle-btn {
+            width: 20px;
+            height: 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 10px;
+            position: absolute;
+            top: -22px;
+            right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .note.parent {
+            position: relative;
+        }
+
+        .note.collapsed .child-connector {
+            display: none;
+        }
+
+        .info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #666;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            max-width: 200px;
+        }
+
+        .info strong {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <button id="addNode">+ Add Node</button>
+        <button id="deleteNode">Delete Selected</button>
+        <button id="resetView">Reset View</button>
+        <label>Zoom: <span id="zoomLevel">100%</span></label>
+        <input type="range" id="zoomSlider" min="20" max="200" value="100">
+        <label>Pan: Use Middle Mouse / Spacebar + Drag</label>
+    </div>
+
+    <div class="canvas-container">
+        <canvas id="canvas"></canvas>
+        <div class="notes-container" id="notesContainer"></div>
+    </div>
+
+    <div class="info">
+        <strong>Keyboard Shortcuts:</strong>
+        <div>Double-click: Edit</div>
+        <div>Del: Delete</div>
+        <div>Ctrl+Add: Add Child</div>
+    </div>
+
+    <script>
+        // ============ STATE MANAGEMENT ============
+        const state = {
+            notes: {},
+            nextId: 1,
+            selectedNoteId: null,
+            panX: 0,
+            panY: 0,
+            zoom: 1,
+            isDragging: false,
+            dragOffsetX: 0,
+            dragOffsetY: 0,
+            isPanning: false,
+            dragStartX: 0,
+            dragStartY: 0
+        };
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const notesContainer = document.getElementById('notesContainer');
+
+        // ============ INITIALIZATION ============
+        function init() {
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            // Create root node
+            const rootId = createNote('Root', 100, 100);
+            state.notes[rootId].isRoot = true;
+            
+            // Create some example children
+            const child1Id = createNote('Child 1', 250, 50, rootId);
+            const child2Id = createNote('Child 2', 250, 150, rootId);
+            const grandchildId = createNote('Grandchild', 400, 50, child1Id);
+            
+            setupEventListeners();
+            render();
+        }
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight - 50;
+        }
+
+        // ============ NOTE MANAGEMENT ============
+        function createNote(text = 'New Note', x = 100, y = 100, parentId = null) {
+            const id = state.nextId++;
+            
+            // Offset child positions to prevent overlap
+            let finalX = x;
+            let finalY = y;
+            if (parentId && state.notes[parentId]) {
+                const parent = state.notes[parentId];
+                const childIndex = parent.children.length;
+                finalY = parent.y + (childIndex * 80) - (parent.children.length * 40);
+            }
+            
+            state.notes[id] = {
+                id,
+                text,
+                x: finalX,
+                y: finalY,
+                parentId,
+                children: [],
+                isExpanded: true,
+                isEditing: false
+            };
+            
+            if (parentId) {
+                state.notes[parentId].children.push(id);
+            }
+            
+            render();
+            return id;
+        }
+
+        function deleteNote(id) {
+            if (!state.notes[id]) return;
+            
+            const note = state.notes[id];
+            
+            // Remove from parent's children
+            if (note.parentId && state.notes[note.parentId]) {
+                state.notes[note.parentId].children = 
+                    state.notes[note.parentId].children.filter(cid => cid !== id);
+            }
+            
+            // Delete all children recursively
+            note.children.forEach(childId => deleteNote(childId));
+            
+            delete state.notes[id];
+            if (state.selectedNoteId === id) {
+                state.selectedNoteId = null;
+            }
+            
+            render();
+        }
+
+        // ============ CANVAS DRAWING ============
+        function drawConnectors() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Apply pan and zoom transforms to canvas context
+            ctx.save();
+            ctx.translate(state.panX, state.panY);
+            ctx.scale(state.zoom, state.zoom);
+            
+            ctx.strokeStyle = '#888';
+            ctx.lineWidth = 2 / state.zoom;
+            ctx.lineCap = 'round';
+
+            Object.values(state.notes).forEach(note => {
+                if (note.parentId && state.notes[note.parentId]) {
+                    const parent = state.notes[note.parentId];
+                    if (parent.isExpanded) {
+                        drawElbowLine(
+                            parent.x + 100,
+                            parent.y + 25,
+                            note.x,
+                            note.y + 25
+                        );
+                    }
+                }
+            });
+            
+            ctx.restore();
+        }
+
+        function drawElbowLine(x1, y1, x2, y2) {
+            const midX = (x1 + x2) / 2;
+            
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(midX, y1);
+            ctx.lineTo(midX, y2);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+        }
+
+        // ============ DOM RENDERING ============
+        function render() {
+            drawConnectors();
+            renderNotes();
+        }
+
+        function renderNotes() {
+            notesContainer.innerHTML = '';
+            
+            Object.values(state.notes).forEach(note => {
+                const noteEl = createNoteElement(note);
+                notesContainer.appendChild(noteEl);
+            });
+            
+            // Apply pan and zoom to entire container
+            notesContainer.style.transform = `translate(${state.panX}px, ${state.panY}px) scale(${state.zoom})`;
+            notesContainer.style.transformOrigin = 'top left';
+        }
+
+        function createNoteElement(note) {
+            const noteEl = document.createElement('div');
+            noteEl.className = 'note' + (note.id === state.selectedNoteId ? ' selected' : '');
+            noteEl.style.left = note.x + 'px';
+            noteEl.style.top = note.y + 'px';
+            noteEl.dataset.id = note.id;
+
+            const hasChildren = note.children.length > 0;
+            
+            let html = '';
+            
+            if (hasChildren) {
+                html += `<button class="toggle-btn" data-toggle="${note.id}" style="display: ${note.isExpanded ? 'none' : 'flex'};">+</button>`;
+            }
+            
+            html += `<div class="note-content" data-edit="${note.id}" contenteditable="true">${escapeHtml(note.text)}</div>`;
+            html += '<div class="note-controls">';
+            html += `<button class="note-btn" data-child="${note.id}">+Child</button>`;
+            html += `<button class="note-btn" data-delete="${note.id}">×</button>`;
+            html += '</div>';
+            
+            noteEl.innerHTML = html;
+            
+            // Event listeners
+            noteEl.addEventListener('mousedown', (e) => handleNoteDragStart(e, note.id));
+            noteEl.addEventListener('dblclick', () => startEditing(note.id));
+            
+            const contentEl = noteEl.querySelector('[data-edit]');
+            contentEl.addEventListener('blur', () => {
+                const text = contentEl.textContent.trim();
+                if (text) {
+                    note.text = text;
+                } else {
+                    contentEl.textContent = note.text;
+                }
+                note.isEditing = false;
+            });
+            
+            contentEl.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    contentEl.blur();
+                }
+            });
+            
+            const toggleBtn = noteEl.querySelector('[data-toggle]');
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    note.isExpanded = !note.isExpanded;
+                    render();
+                });
+            }
+            
+            const addChildBtn = noteEl.querySelector('[data-child]');
+            addChildBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                createNote('New Node', note.x + 150, note.y, note.id);
+            });
+            
+            const deleteBtn = noteEl.querySelector('[data-delete]');
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                deleteNote(note.id);
+            });
+            
+            return noteEl;
+        }
+
+        function startEditing(id) {
+            const note = state.notes[id];
+            note.isEditing = true;
+            render();
+            const contentEl = document.querySelector(`[data-edit="${id}"]`);
+            if (contentEl) {
+                contentEl.focus();
+                const range = document.createRange();
+                range.selectNodeContents(contentEl);
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+        }
+
+        function escapeHtml(text) {
+            const el = document.createElement('div');
+            el.textContent = text;
+            return el.innerHTML;
+        }
+
+        // ============ EVENT HANDLERS ============
+        function handleNoteDragStart(e, noteId) {
+            if (e.button !== 0 || e.target.tagName === 'BUTTON') return;
+            
+            state.selectedNoteId = noteId;
+            state.isDragging = true;
+            state.dragOffsetX = (e.clientX - state.panX) / state.zoom - state.notes[noteId].x;
+            state.dragOffsetY = (e.clientY - state.panY) / state.zoom - state.notes[noteId].y;
+            
+            render();
+            e.preventDefault();
+        }
+
+        function handleCanvasDragStart(e) {
+            if (e.button === 1 || (e.button === 0 && e.code === 'Space')) {
+                state.isPanning = true;
+                state.dragStartX = e.clientX;
+                state.dragStartY = e.clientY;
+                e.preventDefault();
+            }
+        }
+
+        canvas.addEventListener('mousedown', handleCanvasDragStart);
+        document.addEventListener('mousemove', (e) => {
+            if (state.isDragging && state.selectedNoteId) {
+                const note = state.notes[state.selectedNoteId];
+                note.x = (e.clientX - state.panX) / state.zoom - state.dragOffsetX;
+                note.y = (e.clientY - state.panY) / state.zoom - state.dragOffsetY;
+                render();
+            } else if (state.isPanning) {
+                const deltaX = e.clientX - state.dragStartX;
+                const deltaY = e.clientY - state.dragStartY;
+                state.panX += deltaX;
+                state.panY += deltaY;
+                state.dragStartX = e.clientX;
+                state.dragStartY = e.clientY;
+                render();
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            state.isDragging = false;
+            state.isPanning = false;
+        });
+
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+        });
+
+        document.getElementById('zoomSlider').addEventListener('input', (e) => {
+            state.zoom = e.target.value / 100;
+            document.getElementById('zoomLevel').textContent = e.target.value + '%';
+            render();
+        });
+
+        document.getElementById('addNode').addEventListener('click', () => {
+            createNote('New Node', Math.random() * 200 + 100, Math.random() * 200 + 100);
+        });
+
+        document.getElementById('deleteNode').addEventListener('click', () => {
+            if (state.selectedNoteId) {
+                deleteNote(state.selectedNoteId);
+            }
+        });
+
+        document.getElementById('resetView').addEventListener('click', () => {
+            state.panX = 0;
+            state.panY = 0;
+            state.zoom = 1;
+            document.getElementById('zoomSlider').value = 100;
+            document.getElementById('zoomLevel').textContent = '100%';
+            render();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                state.isPanning = true;
+                e.preventDefault();
+            }
+            if (e.key === 'Delete' && state.selectedNoteId) {
+                deleteNote(state.selectedNoteId);
+            }
+        });
+
+        // ============ START ============
+        init();
+    </script>
+</body>
+</html>
