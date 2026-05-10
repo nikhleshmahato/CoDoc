@@ -1,0 +1,148 @@
+{
+  "Mathematics": {
+    "Calculus": {
+      "Limits.md": "notes/matrices.md",
+      "Continuity.md": "notes/demo.md",
+      "Differentiation.md": "notes/demo.md",
+      "Applications_of_Derivatives.md": "notes/demo.md",
+      "Integration.md": "notes/demo.md",
+      "Differential_Equations.md": "notes/demo.md",
+      "Vector_Calculus.md": "notes/demo.md"
+    },
+
+    "Linear_Algebra": {
+      "Matrices.md": "notes/demo.md",
+      "Determinants.md": "notes/demo.md",
+      "Eigen_Values.md": "notes/demo.md",
+      "Vector_Spaces.md": "notes/demo.md",
+      "Linear_Transformations.md": "notes/demo.md"
+    },
+
+    "Discrete_Mathematics": {
+      "Sets.md": "notes/demo.md",
+      "Relations.md": "notes/demo.md",
+      "Functions.md": "notes/demo.md",
+      "Graph_Theory.md": "notes/demo.md",
+      "Combinatorics.md": "notes/demo.md",
+      "Boolean_Algebra.md": "notes/demo.md"
+    },
+
+    "Probability_and_Statistics": {
+      "Probability.md": "notes/demo.md",
+      "Random_Variables.md": "notes/demo.md",
+      "Distributions.md": "notes/demo.md",
+      "Bayes_Theorem.md": "notes/demo.md",
+      "Regression.md": "notes/demo.md"
+    }
+  },
+
+  "Computer_Science": {
+    "Programming_Fundamentals": {
+      "C_Programming.md": "notes/demo.md",
+      "Pointers.md": "notes/demo.md",
+      "Recursion.md": "notes/demo.md",
+      "Object_Oriented_Programming.md": "notes/demo.md"
+    },
+
+    "Data_Structures_and_Algorithms": {
+      "Arrays.md": "notes/dsa.md",
+      "Linked_List.md": "notes/demo.md",
+      "Stack.md": "notes/demo.md",
+      "Queue.md": "notes/demo.md",
+      "Trees.md": "notes/demo.md",
+      "Graphs.md": "notes/demo.md",
+      "Sorting.md": "notes/demo.md",
+      "Dynamic_Programming.md": "notes/demo.md"
+    },
+
+    "Database_Management_System": {
+      "ER_Model.md": "notes/demo.md",
+      "Normalization.md": "notes/demo.md",
+      "SQL.md": "notes/demo.md",
+      "Transactions.md": "notes/demo.md",
+      "Indexing.md": "notes/demo.md"
+    },
+
+    "Operating_System": {
+      "Processes.md": "notes/demo.md",
+      "Threads.md": "notes/demo.md",
+      "CPU_Scheduling.md": "notes/demo.md",
+      "Deadlocks.md": "notes/demo.md",
+      "Memory_Management.md": "notes/demo.md",
+      "File_System.md": "notes/demo.md"
+    },
+
+    "Computer_Networks": {
+      "OSI_Model.md": "notes/demo.md",
+      "TCP_IP.md": "notes/demo.md",
+      "Routing.md": "notes/demo.md",
+      "HTTP.md": "notes/demo.md",
+      "DNS.md": "notes/demo.md",
+      "Socket_Programming.md": "notes/demo.md"
+    },
+
+    "Theory_of_Computation": {
+      "Finite_Automata.md": "notes/demo.md",
+      "Regular_Expressions.md": "notes/demo.md",
+      "Pushdown_Automata.md": "notes/demo.md",
+      "Turing_Machine.md": "notes/demo.md"
+    },
+
+    "Compiler_Design": {
+      "Lexical_Analysis.md": "notes/demo.md",
+      "Parsing.md": "notes/demo.md",
+      "Syntax_Trees.md": "notes/demo.md",
+      "Code_Optimization.md": "notes/demo.md"
+    },
+
+    "Artificial_Intelligence": {
+      "Search_Algorithms.md": "notes/demo.md",
+      "Machine_Learning.md": "notes/demo.md",
+      "Neural_Networks.md": "notes/demo.md",
+      "Deep_Learning.md": "notes/demo.md",
+      "Natural_Language_Processing.md": "notes/demo.md"
+    },
+
+    "Web_Development": {
+      "HTML.md": "notes/demo.md",
+      "CSS.md": "notes/demo.md",
+      "JavaScript.md": "notes/demo.md",
+      "React.md": "notes/demo.md",
+      "NodeJS.md": "notes/demo.md",
+      "REST_API.md": "notes/demo.md"
+    },
+
+    "Software_Engineering": {
+      "SDLC.md": "notes/demo.md",
+      "Agile.md": "notes/demo.md",
+      "Design_Patterns.md": "notes/demo.md",
+      "Testing.md": "notes/demo.md",
+      "Version_Control.md": "notes/demo.md"
+    }
+  },
+
+  "Electronics": {
+    "Digital_Electronics": {
+      "Logic_Gates.md": "notes/demo.md",
+      "Flip_Flops.md": "notes/demo.md",
+      "Counters.md": "notes/demo.md",
+      "Microprocessors.md": "notes/demo.md"
+    },
+
+    "Analog_Electronics": {
+      "Diodes.md": "notes/demo.md",
+      "Transistors.md": "notes/demo.md",
+      "Amplifiers.md": "notes/demo.md",
+      "Operational_Amplifiers.md": "notes/demo.md"
+    }
+  },
+
+  "Programming": {
+    "SVG_and_Graphics": {
+      "SVG_Basics.md": "notes/demo.md",
+      "SVG_Path.md": "notes/demo.md",
+      "Canvas_API.md": "notes/demo.md",
+      "Animations.md": "notes/demo.md"
+    }
+  }
+}

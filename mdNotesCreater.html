@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CoDoc Editor</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial,sans-serif;
+    height:100vh;
+    overflow:hidden;
+    background:#f5f5f5;
+}
+
+#app{
+    display:flex;
+    flex-direction:column;
+    height:100vh;
+}
+
+.topbar{
+    height:60px;
+    border-bottom:1px solid black;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px;
+    overflow-x:auto;
+}
+
+.tool-btn{
+    border:1px solid black;
+    background:rgb(255,255,255);
+    padding:8px 12px;
+    cursor:pointer;
+    border-radius:6px;
+    white-space:nowrap;
+    box-shadow:3px 3px 0px black;
+}
+
+.tool-btn:hover{
+    background:#f0f0f0;
+}
+
+#exp{
+    background:rgb(93,98,221);
+}
+
+#editor{
+    flex:1;
+    overflow:auto;
+    padding:20px;
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+}
+
+.block{
+    position:relative;
+    background:white;
+    border:1px solid black;
+    border-radius:10px;
+    padding:18px;
+}
+
+.delete-btn{
+    position:absolute;
+    top:8px;
+    right:8px;
+    width:24px;
+    height:24px;
+    border:none;
+    background:#ff4d4d;
+    color:white;
+    border-radius:50%;
+    cursor:pointer;
+    font-size:12px;
+}
+
+.editable{
+    outline:none;
+    min-height:30px;
+    width:100%;
+    word-break:break-word;
+}
+
+.heading{
+    font-size:30px;
+    font-weight:bold;
+}
+
+.subheading{
+    font-size:22px;
+    font-weight:bold;
+}
+
+.paragraph{
+    font-size:16px;
+    line-height:1.6;
+}
+
+.code{
+    background:#1e1e1e;
+    color:#00ff88;
+    font-family:monospace;
+    padding:15px;
+    border-radius:6px;
+    white-space:pre-wrap;
+}
+
+.quote{
+    border-left:4px solid black;
+    padding-left:14px;
+    font-style:italic;
+}
+
+.list{
+    padding-left:20px;
+}
+
+.image-input{
+    width:100%;
+    padding:10px;
+    border:1px solid black;
+    margin-bottom:10px;
+}
+
+.image-preview{
+    max-width:100%;
+    border-radius:8px;
+    border:1px solid black;
+}
+
+@media(max-width:700px){
+
+    body{
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        text-align:center;
+        padding:30px;
+    }
+
+    #app{
+        display:none;
+    }
+
+    body::before{
+        content:"This editor is not made for smaller devices.";
+        font-size:20px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div id="app">
+
+    <div class="topbar">
+
+        <button class="tool-btn" onclick="addHeading()">
+            Heading
+        </button>
+
+        <button class="tool-btn" onclick="addSubHeading()">
+            Subheading
+        </button>
+
+        <button class="tool-btn" onclick="addParagraph()">
+            Paragraph
+        </button>
+
+        <button class="tool-btn" onclick="addCode()">
+            Code
+        </button>
+
+        <button class="tool-btn" onclick="addQuote()">
+            Quote
+        </button>
+
+        <button class="tool-btn" onclick="addList()">
+            Bullet List
+        </button>
+
+        <button class="tool-btn" onclick="addImage()">
+            Image
+        </button>
+
+        <button class="tool-btn" id="exp" onclick="exportMarkdown()">
+            Export MD
+        </button>
+
+    </div>
+
+    <div id="editor"></div>
+
+</div>
+
+<script>
+const editor =
+document.getElementById("editor");
+
+function createBlock(innerElement){
+
+    const block =
+    document.createElement("div");
+
+    block.className =
+    "block";
+
+    const deleteBtn =
+    document.createElement("button");
+
+    deleteBtn.className =
+    "delete-btn";
+
+    deleteBtn.textContent =
+    "✕";
+
+    deleteBtn.onclick = () => {
+        block.remove();
+    };
+
+    block.appendChild(deleteBtn);
+
+    block.appendChild(innerElement);
+
+    editor.appendChild(block);
+}
+
+function addHeading(){
+
+    const el =
+    document.createElement("div");
+
+    el.className =
+    "editable heading";
+
+    el.contentEditable =
+    true;
+
+    el.dataset.md =
+    "# ";
+
+    el.innerText =
+    "Heading";
+
+    createBlock(el);
+}
+
+function addSubHeading(){
+
+    const el =
+    document.createElement("div");
+
+    el.className =
+    "editable subheading";
+
+    el.contentEditable =
+    true;
+
+    el.dataset.md =
+    "## ";
+
+    el.innerText =
+    "Subheading";
+
+    createBlock(el);
+}
+
+function addParagraph(){
+
+    const el =
+    document.createElement("div");
+
+    el.className =
+    "editable paragraph";
+
+    el.contentEditable =
+    true;
+
+    el.dataset.md =
+    "";
+
+    el.innerText =
+    "Write paragraph...";
+
+    createBlock(el);
+}
+
+function addCode(){
+
+    const el =
+    document.createElement("pre");
+
+    el.className =
+    "editable code";
+
+    el.contentEditable =
+    true;
+
+    el.dataset.md =
+    "```\\n";
+
+    el.innerText =
+`const hello = "world";`;
+
+    createBlock(el);
+}
+
+function addQuote(){
+
+    const el =
+    document.createElement("div");
+
+    el.className =
+    "editable quote";
+
+    el.contentEditable =
+    true;
+
+    el.dataset.md =
+    "> ";
+
+    el.innerText =
+    "Quote";
+
+    createBlock(el);
+}
+
+function addList(){
+
+    const el =
+    document.createElement("div");
+
+    el.className =
+    "editable list";
+
+    el.contentEditable =
+    true;
+
+    el.dataset.md =
+    "- ";
+
+    el.innerHTML =
+`• Item 1<br>• Item 2`;
+
+    createBlock(el);
+}
+
+function addImage(){
+
+    const container =
+    document.createElement("div");
+
+    const input =
+    document.createElement("input");
+
+    input.type =
+    "text";
+
+    input.placeholder =
+    "Paste Image URL";
+
+    input.className =
+    "image-input";
+
+    const image =
+    document.createElement("img");
+
+    image.className =
+    "image-preview";
+
+    input.addEventListener(
+        "input",
+        () => {
+            image.src =
+            input.value;
+        }
+    );
+
+    container.appendChild(input);
+
+    container.appendChild(image);
+
+    container.dataset.mdtype =
+    "image";
+
+    createBlock(container);
+}
+
+function exportMarkdown(){
+
+    let markdown = "";
+
+    [...editor.children]
+    .forEach(block => {
+
+        const content =
+        block.children[1];
+
+        if(
+            content.dataset.mdtype ===
+            "image"
+        ){
+
+            const url =
+            content.querySelector("input").value;
+
+            markdown +=
+            `![](${url})\n\n`;
+
+            return;
+        }
+
+        const prefix =
+        content.dataset.md || "";
+
+        if(
+            content.classList.contains(
+                "code"
+            )
+        ){
+
+            markdown +=
+`\
+\`\`\`
+${content.innerText}
+\`\`\`
+
+`;
+
+            return;
+        }
+
+        if(
+            content.classList.contains(
+                "list"
+            )
+        ){
+
+            const lines =
+            content.innerText
+            .split("\n");
+
+            lines.forEach(line => {
+
+                markdown +=
+                `- ${line.replace("•","").trim()}\n`;
+            });
+
+            markdown += "\n";
+
+            return;
+        }
+
+        markdown +=
+        prefix +
+        content.innerText +
+        "\n\n";
+    });
+
+    const blob =
+    new Blob(
+        [markdown],
+        {
+            type:"text/markdown"
+        }
+    );
+
+    const a =
+    document.createElement("a");
+
+    a.href =
+    URL.createObjectURL(blob);
+
+    a.download =
+    "notes.md";
+
+    a.click();
+}
+</script>
+
+</body>
+</html>
