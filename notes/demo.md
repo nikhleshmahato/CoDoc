@@ -1,5 +1,5 @@
 
-# Click the app name "Codoc" to write your custom Markdown (.md) Notes.
+# Click the app name "CoDoc" to write your custom Markdown (.md) Notes.
 
 ## Demo Markdown File
 
