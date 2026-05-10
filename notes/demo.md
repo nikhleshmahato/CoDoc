@@ -1,6 +1,7 @@
-# Demo Markdown File
 
-## Headings
+# Click the app name "Codoc" to write your custom Markdown (.md) Notes.
+
+## Demo Markdown File
 
 # Heading 1
 ## Heading 2
